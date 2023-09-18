@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:expense_tracker/models/expense.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class NewExpense extends StatefulWidget {
@@ -44,6 +47,40 @@ class _NewExpenseState extends State<NewExpense> {
     if (_titleController.text.trim().isEmpty ||
         amountIsInvalid ||
         _selectedDate == null) {
+      _showDialog();
+      return;
+    }
+    widget.onAddExpense(
+      newExpense = Expense(
+        title: _titleController.text,
+        amount: amountEntered,
+        date: _selectedDate!,
+        category: _selectedCategory,
+      ),
+    );
+    Navigator.pop(context);
+  }
+
+  void _showDialog() {
+    if (Platform.isIOS) {
+      showCupertinoDialog(
+        context: context,
+        builder: (ctx) => CupertinoAlertDialog(
+          title: const Text("Invalid Text"),
+          content: const Text("Title, Amount or Date is Invalid"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text(
+                "Okay",
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -61,17 +98,7 @@ class _NewExpenseState extends State<NewExpense> {
           ],
         ),
       );
-      return;
     }
-    widget.onAddExpense(
-      newExpense = Expense(
-        title: _titleController.text,
-        amount: amountEntered,
-        date: _selectedDate!,
-        category: _selectedCategory,
-      ),
-    );
-    Navigator.pop(context);
   }
 
   @override
@@ -147,10 +174,12 @@ class _NewExpenseState extends State<NewExpense> {
             "Cancel",
           ),
         );
+
         var saveButton = ElevatedButton(
           onPressed: _submitExpenseData,
           child: const Text("Save Expense"),
         );
+
         return SizedBox(
           height: double.infinity,
           child: SingleChildScrollView(
